@@ -1,0 +1,802 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sprint Performance & Split Calculator</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- FontAwesome Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Chakra+Petch:wght@500;600;700&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        dark: {
+                            900: '#0B0F17',
+                            800: '#111827',
+                            700: '#1F2937',
+                            600: '#374151'
+                        },
+                        neon: {
+                            lime: '#22c55e',
+                            cyan: '#06b6d4',
+                            accent: '#10b981'
+                        }
+                    },
+                    fontFamily: {
+                        sans: ['Inter', 'sans-serif'],
+                        display: ['Chakra Petch', 'sans-serif']
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        body {
+            background-color: #0B0F17;
+            color: #F3F4F6;
+            font-family: 'Inter', sans-serif;
+        }
+        .glow-lime {
+            box-shadow: 0 0 25px -5px rgba(34, 197, 94, 0.3);
+        }
+        .glow-cyan {
+            box-shadow: 0 0 25px -5px rgba(6, 182, 212, 0.3);
+        }
+        .glow-amber {
+            box-shadow: 0 0 25px -5px rgba(245, 158, 11, 0.3);
+        }
+        .font-display {
+            font-family: 'Chakra Petch', sans-serif;
+        }
+        /* Custom styled range slider */
+        input[type=range] {
+            -webkit-appearance: none;
+            background: #1F2937;
+            border-radius: 8px;
+            height: 8px;
+        }
+        input[type=range]::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            height: 22px;
+            width: 22px;
+            border-radius: 50%;
+            background: #22c55e;
+            cursor: pointer;
+            box-shadow: 0 0 10px rgba(34, 197, 94, 0.8);
+        }
+    </style>
+</head>
+<body class="min-h-screen pb-12 antialiased selection:bg-emerald-500 selection:text-black">
+
+    <!-- Header Section -->
+    <header class="border-b border-gray-800 bg-dark-800/60 backdrop-blur-md sticky top-0 z-50">
+        <div class="max-w-6xl mx-auto px-4 py-4 flex items-center justify-between">
+            <div class="flex items-center space-x-3">
+                <div class="w-10 h-10 rounded-xl bg-gradient-to-br from-emerald-400 to-cyan-500 flex items-center justify-center text-dark-900 font-bold text-xl shadow-lg shadow-emerald-500/20">
+                    <i class="fa-solid fa-bolt"></i>
+                </div>
+                <div>
+                    <h1 class="text-xl font-bold font-display tracking-wide text-white">VELO<span class="text-emerald-400">LABS</span></h1>
+                    <p class="text-xs text-gray-400">Universal Sprint Mechanics & Split Analyzer</p>
+                </div>
+            </div>
+            <div class="hidden sm:flex items-center space-x-2 text-xs bg-dark-700/50 px-3 py-1.5 rounded-full border border-gray-700/50 text-gray-300">
+                <span class="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
+                <span>Biomechanical Acceleration Model</span>
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Container -->
+    <main class="max-w-6xl mx-auto px-4 pt-8 space-y-8">
+
+        <!-- Input & Configuration Card -->
+        <div class="bg-dark-800 border border-gray-800 rounded-2xl p-6 sm:p-8 shadow-xl">
+            <div class="grid grid-cols-1 lg:grid-cols-12 gap-8 items-center">
+                
+                <!-- Left Column: Inputs -->
+                <div class="lg:col-span-7 space-y-6">
+                    <div>
+                        <h2 class="text-2xl font-bold font-display text-white mb-2">Sprint Configuration</h2>
+                        <p class="text-sm text-gray-400">Set distance, unit, time, and starting stance to model velocity and splits.</p>
+                    </div>
+
+                    <!-- Distance & Unit Controls -->
+                    <div class="grid grid-cols-1 sm:grid-cols-12 gap-3">
+                        <!-- Distance Value -->
+                        <div class="sm:col-span-7">
+                            <label class="block text-xs font-semibold uppercase tracking-wider text-gray-400 mb-2">
+                                Sprint Distance
+                            </label>
+                            <div class="relative">
+                                <input type="number" id="distInput" step="0.5" min="10" max="200" value="42" 
+                                    class="w-full bg-dark-900 border border-gray-700 rounded-xl px-4 py-3 text-xl font-bold font-mono text-white focus:outline-none focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500 transition-all pr-14">
+                                <span id="distUnitLabel" class="absolute right-4 top-1/2 -translate-y-1/2 text-gray-500 font-bold font-mono text-sm">M</span>
+                            </div>
+                        </div>
+
+                        <!-- Unit Toggle Button -->
+                        <div class="sm:col-span-5">
+                            <label class="block text-xs font-semibold uppercase tracking-wider text-gray-400 mb-2">
+                                Unit
+                            </label>
+                            <div class="grid grid-cols-2 gap-1.5 p-1 bg-dark-900 rounded-xl border border-gray-800">
+                                <button id="unitMetersBtn" onclick="setUnit('m')" class="py-2.5 px-3 rounded-lg font-bold text-xs transition-all bg-emerald-500 text-dark-900">
+                                    Meters (m)
+                                </button>
+                                <button id="unitYardsBtn" onclick="setUnit('yd')" class="py-2.5 px-3 rounded-lg font-bold text-xs transition-all text-gray-400 hover:text-white">
+                                    Yards (yd)
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Presets for Standard Distances -->
+                    <div class="flex flex-wrap gap-2 items-center">
+                        <span class="text-xs text-gray-500 mr-1">Distance Presets:</span>
+                        <button onclick="applyDistancePreset(40, 'yd', 5.20)" class="text-xs bg-dark-700/60 hover:bg-dark-700 border border-gray-700 text-gray-300 px-2.5 py-1 rounded-lg transition">40 yd</button>
+                        <button onclick="applyDistancePreset(42, 'm', 6.72)" class="text-xs bg-emerald-500/20 border border-emerald-500/40 text-emerald-300 px-2.5 py-1 rounded-lg font-semibold transition">42 m</button>
+                        <button onclick="applyDistancePreset(30, 'm', 4.50)" class="text-xs bg-dark-700/60 hover:bg-dark-700 border border-gray-700 text-gray-300 px-2.5 py-1 rounded-lg transition">30 m</button>
+                        <button onclick="applyDistancePreset(50, 'm', 7.80)" class="text-xs bg-dark-700/60 hover:bg-dark-700 border border-gray-700 text-gray-300 px-2.5 py-1 rounded-lg transition">50 m</button>
+                        <button onclick="applyDistancePreset(60, 'm', 9.20)" class="text-xs bg-dark-700/60 hover:bg-dark-700 border border-gray-700 text-gray-300 px-2.5 py-1 rounded-lg transition">60 m</button>
+                    </div>
+
+                    <!-- Stance Selection Toggle -->
+                    <div>
+                        <label class="block text-xs font-semibold uppercase tracking-wider text-gray-400 mb-2">
+                            Starting Stance
+                        </label>
+                        <div class="grid grid-cols-2 gap-3 p-1.5 bg-dark-900 rounded-xl border border-gray-800">
+                            <button id="stance3P" onclick="setStance('3P')" class="py-3 px-4 rounded-lg font-medium text-sm flex items-center justify-center space-x-2 transition-all bg-emerald-500 text-dark-900 font-semibold shadow-md">
+                                <i class="fa-solid fa-person-running text-lg"></i>
+                                <span>3-Point Stance</span>
+                            </button>
+                            <button id="stance2P" onclick="setStance('2P')" class="py-3 px-4 rounded-lg font-medium text-sm flex items-center justify-center space-x-2 transition-all text-gray-400 hover:text-white">
+                                <i class="fa-solid fa-person text-lg"></i>
+                                <span>Standing (2-Point)</span>
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Time Input & Quick Presets -->
+                    <div>
+                        <div class="flex justify-between items-center mb-2">
+                            <label class="text-xs font-semibold uppercase tracking-wider text-gray-400">
+                                Recorded Sprint Time (Seconds)
+                            </label>
+                            <span class="text-xs text-emerald-400 font-mono" id="timeDisplay">6.72 s</span>
+                        </div>
+                        <div class="relative mb-3">
+                            <input type="number" id="timeInput" step="0.01" min="1.0" max="30.0" value="6.72" 
+                                class="w-full bg-dark-900 border border-gray-700 rounded-xl px-4 py-3.5 text-2xl font-bold font-mono text-white focus:outline-none focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500 transition-all pr-12">
+                            <span class="absolute right-4 top-1/2 -translate-y-1/2 text-gray-500 font-bold">SEC</span>
+                        </div>
+                    </div>
+
+                    <!-- Effort Level Slider & Input -->
+                    <div class="bg-dark-900/90 border border-amber-500/30 p-4.5 rounded-xl space-y-3">
+                        <div class="flex justify-between items-center">
+                            <label class="text-xs font-bold uppercase tracking-wider text-amber-400 flex items-center space-x-1.5">
+                                <i class="fa-solid fa-gauge"></i>
+                                <span>Perceived Effort Level</span>
+                            </label>
+                            <div class="flex items-center space-x-2">
+                                <input type="number" id="effortInput" min="50" max="100" value="85" 
+                                    class="w-16 bg-dark-800 border border-amber-500/50 rounded-lg px-2 py-1 text-center font-mono font-bold text-amber-300 text-sm focus:outline-none focus:border-amber-400">
+                                <span class="text-amber-400 font-mono font-bold text-sm">%</span>
+                            </div>
+                        </div>
+                        <div>
+                            <input type="range" id="effortSlider" min="50" max="100" step="1" value="85" class="w-full accent-amber-500">
+                            <div class="flex justify-between text-[10px] font-mono text-gray-500 mt-1">
+                                <span>50% (Tempo)</span>
+                                <span>75% (Sub-Max)</span>
+                                <span>85% (Sub-Peak)</span>
+                                <span>100% (All-Out Peak)</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <button onclick="calculateMetrics()" class="w-full bg-gradient-to-r from-emerald-500 via-teal-500 to-cyan-500 hover:from-emerald-400 hover:to-cyan-400 text-dark-900 font-bold font-display text-lg py-4 rounded-xl shadow-lg shadow-emerald-500/20 transition-all transform active:scale-[0.99] flex items-center justify-center space-x-2">
+                        <i class="fa-solid fa-calculator"></i>
+                        <span>CALCULATE CURRENT & POTENTIAL PEAKS</span>
+                    </button>
+                </div>
+
+                <!-- Right Column: Explanatory Box -->
+                <div class="lg:col-span-5 bg-dark-900/80 border border-gray-800 rounded-xl p-5 space-y-4">
+                    <h3 class="text-sm font-bold font-display uppercase text-emerald-400 flex items-center space-x-2">
+                        <i class="fa-solid fa-circle-info"></i>
+                        <span>Config Mechanics</span>
+                    </h3>
+                    <div id="stanceInfoText" class="text-xs text-gray-300 leading-relaxed space-y-2">
+                        <!-- Populated by JS -->
+                    </div>
+
+                    <!-- Effort Delta Summary Banner -->
+                    <div id="effortSummaryBanner" class="hidden bg-amber-500/10 border border-amber-500/30 p-3.5 rounded-xl space-y-2">
+                        <span class="text-[11px] font-bold uppercase tracking-wider text-amber-400 block flex items-center space-x-1.5">
+                            <i class="fa-solid fa-bolt text-amber-400"></i>
+                            <span>100% Effort Potential Gain</span>
+                        </span>
+                        <div class="text-xs text-gray-300">
+                            Running at <strong class="text-amber-300 font-mono" id="summaryEffortText">85% effort</strong> gave <strong class="text-white font-mono" id="summaryCurrent40">5.78s</strong> (40yd). At 100% effort, your potential is <strong class="text-emerald-400 font-mono" id="summaryPeak40">5.28s</strong>—saving <strong class="text-emerald-400 font-mono" id="summaryDelta40">-0.50s</strong>!
+                        </div>
+                    </div>
+
+                    <div class="pt-3 border-t border-gray-800 grid grid-cols-2 gap-2 text-center text-xs">
+                        <div class="bg-dark-800 p-2.5 rounded-lg border border-gray-800">
+                            <span class="block text-gray-500 text-[10px]">CURRENT DISTANCE</span>
+                            <span class="font-mono font-bold text-gray-200" id="infoDistDisplay">42.00 m</span>
+                            <span class="block text-[10px] text-gray-500" id="infoDistEqDisplay">(~45.93 yd)</span>
+                        </div>
+                        <div class="bg-dark-800 p-2.5 rounded-lg border border-gray-800">
+                            <span class="block text-gray-500 text-[10px]">KEY CHECKPOINT</span>
+                            <span class="font-mono font-bold text-gray-200">40.00 Yards</span>
+                            <span class="block text-[10px] text-gray-500">(36.58 Meters)</span>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+
+        <!-- Key Highlights Dashboard -->
+        <div id="metricsDashboard" class="grid grid-cols-1 md:grid-cols-3 gap-6">
+            
+            <!-- 40 Yard Dash Estimate -->
+            <div class="bg-dark-800 border border-emerald-500/30 rounded-2xl p-6 glow-lime relative overflow-hidden group">
+                <div class="absolute -right-4 -bottom-4 opacity-10 text-emerald-400 group-hover:scale-110 transition-transform">
+                    <i class="fa-solid fa-stopwatch text-8xl"></i>
+                </div>
+                <div class="flex items-center justify-between mb-2">
+                    <div class="flex items-center space-x-2">
+                        <span class="w-2.5 h-2.5 rounded-full bg-emerald-400"></span>
+                        <h3 class="text-xs font-bold uppercase tracking-wider text-emerald-400">40-Yard Dash</h3>
+                    </div>
+                    <span id="badge40" class="hidden text-[10px] bg-amber-500/20 text-amber-300 border border-amber-500/30 px-2 py-0.5 rounded-md font-mono">Sub-Max</span>
+                </div>
+                
+                <div class="my-3 space-y-1">
+                    <div class="flex items-baseline space-x-2">
+                        <span id="yard40Output" class="text-4xl sm:text-5xl font-extrabold font-mono text-white">5.78</span>
+                        <span class="text-lg text-emerald-400 font-bold">SEC</span>
+                        <span id="yard40SubLabel" class="text-xs text-gray-400 font-mono">(at current effort)</span>
+                    </div>
+                    
+                    <div id="yard40PeakContainer" class="hidden pt-2 border-t border-gray-800 flex items-center justify-between text-xs font-mono">
+                        <span class="text-gray-400">100% Potential Peak:</span>
+                        <span class="text-emerald-400 font-bold text-sm"><span id="yard40Peak">5.28</span>s (<span id="yard40Delta" class="text-emerald-400">-0.50s</span>)</span>
+                    </div>
+                </div>
+                <p class="text-xs text-gray-400">Projected time at 40-yard (36.58m) mark.</p>
+            </div>
+
+            <!-- Implied Top Speed -->
+            <div class="bg-dark-800 border border-cyan-500/30 rounded-2xl p-6 glow-cyan relative overflow-hidden group">
+                <div class="absolute -right-4 -bottom-4 opacity-10 text-cyan-400 group-hover:scale-110 transition-transform">
+                    <i class="fa-solid fa-gauge-high text-8xl"></i>
+                </div>
+                <div class="flex items-center justify-between mb-2">
+                    <div class="flex items-center space-x-2">
+                        <span class="w-2.5 h-2.5 rounded-full bg-cyan-400"></span>
+                        <h3 class="text-xs font-bold uppercase tracking-wider text-cyan-400">Top Velocity</h3>
+                    </div>
+                    <span id="badgeSpeed" class="hidden text-[10px] bg-amber-500/20 text-amber-300 border border-amber-500/30 px-2 py-0.5 rounded-md font-mono">Sub-Max</span>
+                </div>
+                
+                <div class="my-3 space-y-1">
+                    <div class="flex items-baseline space-x-2">
+                        <span id="topSpeedKmh" class="text-4xl sm:text-5xl font-extrabold font-mono text-white">28.4</span>
+                        <span class="text-lg text-cyan-400 font-bold">KM/H</span>
+                        <span id="topSpeedMs" class="text-xs text-gray-400 font-mono">7.89 m/s</span>
+                    </div>
+                    
+                    <div id="topSpeedPeakContainer" class="hidden pt-2 border-t border-gray-800 flex items-center justify-between text-xs font-mono">
+                        <span class="text-gray-400">100% Potential Peak:</span>
+                        <span class="text-cyan-400 font-bold text-sm"><span id="topSpeedPeak">32.1</span> km/h (<span id="topSpeedDelta">+3.7 km/h</span>)</span>
+                    </div>
+                </div>
+                <p class="text-xs text-gray-400">Peak instant velocity achieved during sprint.</p>
+            </div>
+
+            <!-- Average Speed -->
+            <div class="bg-dark-800 border border-gray-800 rounded-2xl p-6 relative overflow-hidden group">
+                <div class="absolute -right-4 -bottom-4 opacity-10 text-gray-400 group-hover:scale-110 transition-transform">
+                    <i class="fa-solid fa-chart-line text-8xl"></i>
+                </div>
+                <div class="flex items-center space-x-2 mb-2">
+                    <span class="w-2.5 h-2.5 rounded-full bg-gray-400"></span>
+                    <h3 class="text-xs font-bold uppercase tracking-wider text-gray-400">Average Speed</h3>
+                </div>
+                <div class="my-3 space-y-1">
+                    <div class="flex items-baseline space-x-2">
+                        <span id="avgSpeedKmh" class="text-4xl sm:text-5xl font-extrabold font-mono text-white">22.5</span>
+                        <span class="text-lg text-gray-400 font-bold">KM/H</span>
+                        <span id="avgSpeedMs" class="text-xs text-gray-400 font-mono">6.25 m/s</span>
+                    </div>
+
+                    <div id="avgSpeedPeakContainer" class="hidden pt-2 border-t border-gray-800 flex items-center justify-between text-xs font-mono">
+                        <span class="text-gray-400">100% Potential Avg:</span>
+                        <span class="text-gray-200 font-bold text-sm"><span id="avgSpeedPeak">25.4</span> km/h</span>
+                    </div>
+                </div>
+                <p class="text-xs text-gray-400" id="avgSpeedSubtext">Overall average velocity across 42m.</p>
+            </div>
+
+        </div>
+
+        <!-- Detailed Split Times Section -->
+        <div class="bg-dark-800 border border-gray-800 rounded-2xl p-6 sm:p-8 shadow-xl space-y-6">
+            <div class="flex flex-col sm:flex-row justify-between sm:items-center gap-4">
+                <div>
+                    <h3 class="text-xl font-bold font-display text-white">Split Breakdown & Peak Comparisons</h3>
+                    <p class="text-xs text-gray-400">Cumulative split times vs potential 100% effort output.</p>
+                </div>
+                <div class="flex items-center space-x-4 text-xs font-mono">
+                    <div class="flex items-center space-x-1.5">
+                        <span class="w-3 h-3 rounded bg-amber-500/20 border border-amber-500"></span>
+                        <span class="text-gray-300">Current Run</span>
+                    </div>
+                    <div class="flex items-center space-x-1.5">
+                        <span class="w-3 h-3 rounded bg-emerald-500/20 border border-emerald-500"></span>
+                        <span class="text-gray-300">100% Potential Peak</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Table -->
+            <div class="overflow-x-auto">
+                <table class="w-full text-left text-sm">
+                    <thead>
+                        <tr class="border-b border-gray-800 text-xs font-bold uppercase text-gray-400 tracking-wider">
+                            <th class="pb-3 px-4">Checkpoint</th>
+                            <th class="pb-3 px-4">Equivalent</th>
+                            <th class="pb-3 px-4">Current Time</th>
+                            <th id="thPeakHeader" class="pb-3 px-4 text-emerald-400">100% Peak Time</th>
+                            <th class="pb-3 px-4">Time Saved</th>
+                            <th class="pb-3 px-4">Phase</th>
+                        </tr>
+                    </thead>
+                    <tbody id="splitTableBody" class="divide-y divide-gray-800/60 text-gray-200 font-mono">
+                        <!-- Dynamically populated -->
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- Interactive Distance Runner Visualizer -->
+        <div class="bg-dark-800 border border-gray-800 rounded-2xl p-6 sm:p-8 space-y-6">
+            <div class="flex flex-col sm:flex-row justify-between sm:items-center">
+                <div>
+                    <h3 class="text-lg font-bold font-display text-white">Interactive Distance Simulation</h3>
+                    <p class="text-xs text-gray-400">Scrub across the track to estimate exact time and speed at any point.</p>
+                </div>
+                <div class="mt-2 sm:mt-0 font-mono text-sm bg-dark-900 px-4 py-2 rounded-xl border border-gray-800">
+                    Distance: <span id="simDistText" class="text-emerald-400 font-bold">20.0</span> <span id="simUnitText">m</span> 
+                    (<span id="simEquivText" class="text-gray-400">21.87 yd</span>)
+                </div>
+            </div>
+
+            <div>
+                <input type="range" id="simSlider" min="0" max="42" step="0.5" value="20" class="w-full accent-emerald-500" oninput="updateSim()">
+                <div class="flex justify-between text-[11px] text-gray-500 mt-2 font-mono" id="simTicks">
+                    <!-- Dynamic Ticks -->
+                </div>
+            </div>
+
+            <!-- Simulated Stats Result -->
+            <div class="grid grid-cols-2 sm:grid-cols-4 gap-4 pt-2">
+                <div class="bg-dark-900 p-4 rounded-xl border border-gray-800">
+                    <span class="text-[10px] font-bold text-gray-500 uppercase">Elapsed Time</span>
+                    <div id="simTimeVal" class="text-2xl font-bold font-mono text-white mt-1">3.28 s</div>
+                    <div id="simTimePeakVal" class="text-xs text-emerald-400 font-mono mt-0.5">Peak: 2.98s</div>
+                </div>
+                <div class="bg-dark-900 p-4 rounded-xl border border-gray-800">
+                    <span class="text-[10px] font-bold text-gray-500 uppercase">Instant Speed</span>
+                    <div id="simSpeedVal" class="text-2xl font-bold font-mono text-cyan-400 mt-1">26.1 km/h</div>
+                    <div id="simSpeedPeakVal" class="text-xs text-cyan-300 font-mono mt-0.5">Peak: 29.5 km/h</div>
+                </div>
+                <div class="bg-dark-900 p-4 rounded-xl border border-gray-800">
+                    <span class="text-[10px] font-bold text-gray-500 uppercase">% of Max Velocity</span>
+                    <div id="simPaceVal" class="text-2xl font-bold font-mono text-emerald-400 mt-1">91.8%</div>
+                    <div class="text-[10px] text-gray-500 font-mono mt-0.5">at current effort</div>
+                </div>
+                <div class="bg-dark-900 p-4 rounded-xl border border-gray-800">
+                    <span class="text-[10px] font-bold text-gray-500 uppercase">Current Phase</span>
+                    <div id="simPhaseVal" class="text-sm font-bold font-display text-gray-300 mt-2">Drive Phase</div>
+                </div>
+            </div>
+        </div>
+
+    </main>
+
+    <!-- Script Logic -->
+    <script>
+        // Application State
+        let currentStance = '3P'; // '3P' or '2P'
+        let currentUnit = 'm';    // 'm' or 'yd'
+
+        // Conversion Constant
+        const YARDS_TO_METERS = 0.9144;
+
+        // DOM Elements
+        const distInput = document.getElementById('distInput');
+        const distUnitLabel = document.getElementById('distUnitLabel');
+        const unitMetersBtn = document.getElementById('unitMetersBtn');
+        const unitYardsBtn = document.getElementById('unitYardsBtn');
+
+        const stance3PBtn = document.getElementById('stance3P');
+        const stance2PBtn = document.getElementById('stance2P');
+        const timeInput = document.getElementById('timeInput');
+        const timeDisplay = document.getElementById('timeDisplay');
+        const stanceInfoText = document.getElementById('stanceInfoText');
+        const effortInput = document.getElementById('effortInput');
+        const effortSlider = document.getElementById('effortSlider');
+
+        // Cards & Labels
+        const infoDistDisplay = document.getElementById('infoDistDisplay');
+        const infoDistEqDisplay = document.getElementById('infoDistEqDisplay');
+        const avgSpeedSubtext = document.getElementById('avgSpeedSubtext');
+
+        // Banners & Badges
+        const effortSummaryBanner = document.getElementById('effortSummaryBanner');
+        const summaryEffortText = document.getElementById('summaryEffortText');
+        const summaryCurrent40 = document.getElementById('summaryCurrent40');
+        const summaryPeak40 = document.getElementById('summaryPeak40');
+        const summaryDelta40 = document.getElementById('summaryDelta40');
+        const badge40 = document.getElementById('badge40');
+        const badgeSpeed = document.getElementById('badgeSpeed');
+
+        // Outputs
+        const yard40Output = document.getElementById('yard40Output');
+        const yard40SubLabel = document.getElementById('yard40SubLabel');
+        const yard40PeakContainer = document.getElementById('yard40PeakContainer');
+        const yard40Peak = document.getElementById('yard40Peak');
+        const yard40Delta = document.getElementById('yard40Delta');
+
+        const topSpeedKmh = document.getElementById('topSpeedKmh');
+        const topSpeedMs = document.getElementById('topSpeedMs');
+        const topSpeedPeakContainer = document.getElementById('topSpeedPeakContainer');
+        const topSpeedPeak = document.getElementById('topSpeedPeak');
+        const topSpeedDelta = document.getElementById('topSpeedDelta');
+
+        const avgSpeedKmh = document.getElementById('avgSpeedKmh');
+        const avgSpeedMs = document.getElementById('avgSpeedMs');
+        const avgSpeedPeakContainer = document.getElementById('avgSpeedPeakContainer');
+        const avgSpeedPeak = document.getElementById('avgSpeedPeak');
+
+        const splitTableBody = document.getElementById('splitTableBody');
+
+        // Sim DOM
+        const simSlider = document.getElementById('simSlider');
+        const simDistText = document.getElementById('simDistText');
+        const simUnitText = document.getElementById('simUnitText');
+        const simEquivText = document.getElementById('simEquivText');
+        const simTimeVal = document.getElementById('simTimeVal');
+        const simTimePeakVal = document.getElementById('simTimePeakVal');
+        const simSpeedVal = document.getElementById('simSpeedVal');
+        const simSpeedPeakVal = document.getElementById('simSpeedPeakVal');
+        const simPaceVal = document.getElementById('simPaceVal');
+        const simPhaseVal = document.getElementById('simPhaseVal');
+        const simTicks = document.getElementById('simTicks');
+
+        // Event Listeners
+        distInput.addEventListener('input', calculateMetrics);
+
+        timeInput.addEventListener('input', () => {
+            timeDisplay.innerText = `${parseFloat(timeInput.value || 0).toFixed(2)} s`;
+            calculateMetrics();
+        });
+
+        effortInput.addEventListener('input', () => {
+            let val = Math.max(50, Math.min(100, parseInt(effortInput.value || 100)));
+            effortSlider.value = val;
+            calculateMetrics();
+        });
+
+        effortSlider.addEventListener('input', () => {
+            effortInput.value = effortSlider.value;
+            calculateMetrics();
+        });
+
+        function setUnit(unit) {
+            if (currentUnit === unit) return;
+            
+            const rawVal = parseFloat(distInput.value) || 40;
+            if (unit === 'yd' && currentUnit === 'm') {
+                // Converting M -> YD
+                distInput.value = (rawVal / YARDS_TO_METERS).toFixed(1);
+            } else if (unit === 'm' && currentUnit === 'yd') {
+                // Converting YD -> M
+                distInput.value = (rawVal * YARDS_TO_METERS).toFixed(1);
+            }
+
+            currentUnit = unit;
+
+            if (unit === 'm') {
+                unitMetersBtn.className = "py-2.5 px-3 rounded-lg font-bold text-xs transition-all bg-emerald-500 text-dark-900";
+                unitYardsBtn.className = "py-2.5 px-3 rounded-lg font-bold text-xs transition-all text-gray-400 hover:text-white";
+                distUnitLabel.innerText = "M";
+            } else {
+                unitYardsBtn.className = "py-2.5 px-3 rounded-lg font-bold text-xs transition-all bg-emerald-500 text-dark-900";
+                unitMetersBtn.className = "py-2.5 px-3 rounded-lg font-bold text-xs transition-all text-gray-400 hover:text-white";
+                distUnitLabel.innerText = "YD";
+            }
+
+            calculateMetrics();
+        }
+
+        function applyDistancePreset(dist, unit, defaultTime) {
+            currentUnit = unit;
+            distInput.value = dist;
+            timeInput.value = defaultTime.toFixed(2);
+            timeDisplay.innerText = `${defaultTime.toFixed(2)} s`;
+
+            if (unit === 'm') {
+                unitMetersBtn.className = "py-2.5 px-3 rounded-lg font-bold text-xs transition-all bg-emerald-500 text-dark-900";
+                unitYardsBtn.className = "py-2.5 px-3 rounded-lg font-bold text-xs transition-all text-gray-400 hover:text-white";
+                distUnitLabel.innerText = "M";
+            } else {
+                unitYardsBtn.className = "py-2.5 px-3 rounded-lg font-bold text-xs transition-all bg-emerald-500 text-dark-900";
+                unitMetersBtn.className = "py-2.5 px-3 rounded-lg font-bold text-xs transition-all text-gray-400 hover:text-white";
+                distUnitLabel.innerText = "YD";
+            }
+
+            calculateMetrics();
+        }
+
+        function setStance(stance) {
+            currentStance = stance;
+            if (stance === '3P') {
+                stance3PBtn.className = "py-3 px-4 rounded-lg font-medium text-sm flex items-center justify-center space-x-2 transition-all bg-emerald-500 text-dark-900 font-semibold shadow-md";
+                stance2PBtn.className = "py-3 px-4 rounded-lg font-medium text-sm flex items-center justify-center space-x-2 transition-all text-gray-400 hover:text-white";
+            } else {
+                stance2PBtn.className = "py-3 px-4 rounded-lg font-medium text-sm flex items-center justify-center space-x-2 transition-all bg-emerald-500 text-dark-900 font-semibold shadow-md";
+                stance3PBtn.className = "py-3 px-4 rounded-lg font-medium text-sm flex items-center justify-center space-x-2 transition-all text-gray-400 hover:text-white";
+            }
+            calculateMetrics();
+        }
+
+        /**
+         * Sprint Physics Acceleration Model in Meters
+         * x(t) = Vmax * (t + tau * exp(-t / tau) - tau)
+         */
+        function solveSprintModel(totalDistanceMeters, totalTime, stance) {
+            let tau = (stance === '3P') ? 1.12 : 1.25;
+            const f = (t, tau) => (t + tau * Math.exp(-t / tau) - tau);
+            let Vmax = totalDistanceMeters / f(totalTime, tau);
+
+            let avgSpeed = totalDistanceMeters / totalTime;
+            let ratio = Vmax / avgSpeed;
+
+            if (ratio > 1.32) {
+                tau = tau * 0.9;
+                Vmax = totalDistanceMeters / f(totalTime, tau);
+            } else if (ratio < 1.18) {
+                tau = tau * 1.1;
+                Vmax = totalDistanceMeters / f(totalTime, tau);
+            }
+
+            return { Vmax, tau };
+        }
+
+        function getTimeForDistance(xMeters, Vmax, tau) {
+            let low = 0;
+            let high = 30.0;
+            for (let i = 0; i < 30; i++) {
+                let mid = (low + high) / 2;
+                let distAtMid = Vmax * (mid + tau * Math.exp(-mid / tau) - tau);
+                if (distAtMid < xMeters) low = mid;
+                else high = mid;
+            }
+            return (low + high) / 2;
+        }
+
+        function getVelocityAtTime(t, Vmax, tau) {
+            return Vmax * (1 - Math.exp(-t / tau));
+        }
+
+        function calculateMetrics() {
+            const rawDist = parseFloat(distInput.value) || 42;
+            const T_current = parseFloat(timeInput.value) || 6.72;
+            const effort = parseInt(effortInput.value) || 100;
+
+            if (isNaN(T_current) || T_current <= 0 || isNaN(rawDist) || rawDist <= 0) return;
+
+            // Normalize total distance to meters for physics model
+            const D_TOTAL_METERS = (currentUnit === 'yd') ? rawDist * YARDS_TO_METERS : rawDist;
+
+            // 1. Current Performance Model
+            const { Vmax: Vmax_curr, tau: tau_curr } = solveSprintModel(D_TOTAL_METERS, T_current, currentStance);
+
+            // 2. Biomechanical Effort Scaling:
+            const effortFactor = Math.pow(effort / 100.0, 0.75);
+            const Vmax_peak = Vmax_curr / effortFactor;
+            const tau_peak = tau_curr * Math.pow(effort / 100.0, 0.2);
+
+            // Calculate 100% Potential Total Time
+            const T_peak = getTimeForDistance(D_TOTAL_METERS, Vmax_peak, tau_peak);
+
+            // Speed Outputs
+            const avgKmh_curr = (D_TOTAL_METERS / T_current) * 3.6;
+            const avgKmh_peak = (D_TOTAL_METERS / T_peak) * 3.6;
+            const topKmh_curr = Vmax_curr * 3.6;
+            const topKmh_peak = Vmax_peak * 3.6;
+
+            // Update Header Information Box
+            const distInYards = D_TOTAL_METERS / YARDS_TO_METERS;
+            infoDistDisplay.innerText = `${rawDist.toFixed(1)} ${currentUnit}`;
+            infoDistEqDisplay.innerText = currentUnit === 'm' ? `(~${distInYards.toFixed(2)} yd)` : `(~${D_TOTAL_METERS.toFixed(2)} m)`;
+            avgSpeedSubtext.innerText = `Overall average velocity across ${rawDist.toFixed(1)}${currentUnit}.`;
+
+            // Update Stance Info Text
+            stanceInfoText.innerHTML = `
+                <p><strong>${currentStance === '3P' ? '3-Point Stance' : 'Standing 2-Point'} selected:</strong> ${currentStance === '3P' ? 'Sharper shin angles generate earlier horizontal force output.' : 'Higher center of mass allows earlier posture upright stance.'}</p>
+                <p class="text-amber-300 font-semibold">Modeled sprint distance: ${rawDist.toFixed(1)}${currentUnit} (${currentUnit === 'm' ? distInYards.toFixed(1) + ' yd' : D_TOTAL_METERS.toFixed(1) + ' m'}).</p>
+            `;
+
+            // Dynamic Checkpoints (mix of fixed standards + final finish line)
+            let rawCheckpoints = [
+                { name: "10 Yards", distM: 9.144, labelEq: "10.0 yd / 9.14 m", phase: "Drive Phase" },
+                { name: "20 Yards", distM: 18.288, labelEq: "20.0 yd / 18.29 m", phase: "Transition Phase" },
+                { name: "30 Yards", distM: 27.432, labelEq: "30.0 yd / 27.43 m", phase: "Approaching Top Speed" },
+                { name: "40-Yard Dash", distM: 36.576, labelEq: "40.0 yd / 36.58 m", phase: "Max Velocity / Maintenance" }
+            ];
+
+            // Filter checkpoints within sprint bounds & add total finish checkpoint
+            let checkpoints = rawCheckpoints.filter(cp => cp.distM < D_TOTAL_METERS - 0.5);
+
+            const totalEqLabel = currentUnit === 'm' ? `${rawDist.toFixed(1)} m / ${distInYards.toFixed(1)} yd` : `${rawDist.toFixed(1)} yd / ${D_TOTAL_METERS.toFixed(1)} m`;
+            checkpoints.push({
+                name: `Finish Line (${rawDist.toFixed(1)}${currentUnit})`,
+                distM: D_TOTAL_METERS,
+                labelEq: totalEqLabel,
+                phase: "Finish Line"
+            });
+
+            let yard40_curr = getTimeForDistance(36.576, Vmax_curr, tau_curr);
+            let yard40_peak = getTimeForDistance(36.576, Vmax_peak, tau_peak);
+
+            let tableHTML = "";
+            checkpoints.forEach((cp) => {
+                const cumTime_curr = getTimeForDistance(cp.distM, Vmax_curr, tau_curr);
+                const cumTime_peak = getTimeForDistance(cp.distM, Vmax_peak, tau_peak);
+                const delta = cumTime_peak - cumTime_curr;
+
+                const isHighlight = cp.name.includes("40-Yard");
+
+                tableHTML += `
+                    <tr class="${isHighlight ? 'bg-emerald-500/10 font-bold border-l-4 border-l-emerald-400' : 'hover:bg-dark-700/30'} transition-colors">
+                        <td class="py-3.5 px-4 font-semibold text-white">${cp.name}</td>
+                        <td class="py-3.5 px-4 text-gray-400">${cp.labelEq}</td>
+                        <td class="py-3.5 px-4 text-amber-300 font-bold">${cumTime_curr.toFixed(2)}s</td>
+                        <td class="py-3.5 px-4 text-emerald-400 font-bold">${cumTime_peak.toFixed(2)}s</td>
+                        <td class="py-3.5 px-4 text-emerald-400 font-mono">${delta.toFixed(2)}s</td>
+                        <td class="py-3.5 px-4 text-xs font-sans text-gray-400">${cp.phase}</td>
+                    </tr>
+                `;
+            });
+
+            // Update Dashboards & Badges
+            yard40Output.innerText = yard40_curr.toFixed(2);
+            topSpeedKmh.innerText = topKmh_curr.toFixed(1);
+            topSpeedMs.innerText = `${Vmax_curr.toFixed(2)} m/s`;
+            avgSpeedKmh.innerText = avgKmh_curr.toFixed(1);
+            avgSpeedMs.innerText = `${(D_TOTAL_METERS / T_current).toFixed(2)} m/s`;
+
+            splitTableBody.innerHTML = tableHTML;
+
+            // Handle Effort < 100% Views
+            if (effort < 100) {
+                const delta40 = yard40_peak - yard40_curr;
+                const deltaSpeed = topKmh_peak - topKmh_curr;
+
+                effortSummaryBanner.classList.remove('hidden');
+                summaryEffortText.innerText = `${effort}% effort`;
+                summaryCurrent40.innerText = `${yard40_curr.toFixed(2)}s`;
+                summaryPeak40.innerText = `${yard40_peak.toFixed(2)}s`;
+                summaryDelta40.innerText = `${delta40.toFixed(2)}s`;
+
+                badge40.classList.remove('hidden');
+                badgeSpeed.classList.remove('hidden');
+
+                yard40SubLabel.innerText = `(at ${effort}% effort)`;
+                yard40PeakContainer.classList.remove('hidden');
+                yard40Peak.innerText = yard40_peak.toFixed(2);
+                yard40Delta.innerText = `${delta40.toFixed(2)}s`;
+
+                topSpeedPeakContainer.classList.remove('hidden');
+                topSpeedPeak.innerText = topKmh_peak.toFixed(1);
+                topSpeedDelta.innerText = `+${deltaSpeed.toFixed(1)} km/h`;
+
+                avgSpeedPeakContainer.classList.remove('hidden');
+                avgSpeedPeak.innerText = avgKmh_peak.toFixed(1);
+            } else {
+                effortSummaryBanner.classList.add('hidden');
+                badge40.classList.add('hidden');
+                badgeSpeed.classList.add('hidden');
+                yard40SubLabel.innerText = `(full effort)`;
+                yard40PeakContainer.classList.add('hidden');
+                topSpeedPeakContainer.classList.add('hidden');
+                avgSpeedPeakContainer.classList.add('hidden');
+            }
+
+            // Update Simulator Bounds
+            simSlider.max = rawDist;
+            simSlider.value = (rawDist / 2).toFixed(1);
+
+            // Rebuild Ticks
+            const tick1 = (rawDist * 0.25).toFixed(0);
+            const tick2 = (rawDist * 0.50).toFixed(0);
+            const tick3 = (rawDist * 0.75).toFixed(0);
+            simTicks.innerHTML = `
+                <span>0${currentUnit}</span>
+                <span>${tick1}${currentUnit}</span>
+                <span>${tick2}${currentUnit}</span>
+                <span>${tick3}${currentUnit}</span>
+                <span>${rawDist.toFixed(1)}${currentUnit}</span>
+            `;
+
+            // Save state globally for simulator
+            window.currentModel = { Vmax_curr, tau_curr, Vmax_peak, tau_peak, T_current, effort, D_TOTAL_METERS, rawDist };
+            updateSim();
+        }
+
+        function updateSim() {
+            if (!window.currentModel) return;
+            const { Vmax_curr, tau_curr, Vmax_peak, tau_peak, effort, rawDist } = window.currentModel;
+
+            const distVal = parseFloat(simSlider.value);
+            const distMeters = (currentUnit === 'yd') ? distVal * YARDS_TO_METERS : distVal;
+
+            const time_curr = getTimeForDistance(distMeters, Vmax_curr, tau_curr);
+            const time_peak = getTimeForDistance(distMeters, Vmax_peak, tau_peak);
+
+            const vel_curr = getVelocityAtTime(time_curr, Vmax_curr, tau_curr);
+            const vel_peak = getVelocityAtTime(time_peak, Vmax_peak, tau_peak);
+
+            const velKmh_curr = vel_curr * 3.6;
+            const velKmh_peak = vel_peak * 3.6;
+            const pctMax = (vel_curr / Vmax_curr) * 100;
+
+            simDistText.innerText = distVal.toFixed(1);
+            simUnitText.innerText = currentUnit;
+            simEquivText.innerText = currentUnit === 'm' ? `${(distVal * 1.09361).toFixed(2)} yd` : `${(distVal * YARDS_TO_METERS).toFixed(2)} m`;
+
+            simTimeVal.innerText = `${time_curr.toFixed(2)} s`;
+            simSpeedVal.innerText = `${velKmh_curr.toFixed(1)} km/h`;
+            simPaceVal.innerText = `${pctMax.toFixed(1)}%`;
+
+            if (effort < 100) {
+                simTimePeakVal.classList.remove('hidden');
+                simSpeedPeakVal.classList.remove('hidden');
+                simTimePeakVal.innerText = `100% Potential: ${time_peak.toFixed(2)}s`;
+                simSpeedPeakVal.innerText = `100% Potential: ${velKmh_peak.toFixed(1)} km/h`;
+            } else {
+                simTimePeakVal.classList.add('hidden');
+                simSpeedPeakVal.classList.add('hidden');
+            }
+
+            const pctDist = distVal / rawDist;
+            let phase = "Drive Phase";
+            if (pctDist > 0.25 && pctDist <= 0.65) phase = "Transition Phase";
+            if (pctDist > 0.65 && pctDist <= 0.90) phase = "Max Velocity";
+            if (pctDist > 0.90) phase = "Speed Endurance";
+
+            simPhaseVal.innerText = phase;
+        }
+
+        window.onload = function() {
+            calculateMetrics();
+        };
+    </script>
+</body>
+</html>
